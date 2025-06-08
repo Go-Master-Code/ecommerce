@@ -1,0 +1,238 @@
+{{template "layout" .}}
+{{define "main"}}
+
+<script>
+    window.onload = function() {
+        HitungJumlahBaris();
+    };
+
+    function submitForm() {
+        // Submit form setelah fungsi dijalankan
+        document.getElementById('myForm').submit();
+    }
+
+    function HitungJumlahBaris() {
+        // Mendapatkan elemen tabel
+        var tabel = document.getElementById('dynamicTable');
+        
+        // Mendapatkan semua baris pada tbody (mengabaikan baris header)
+        var baris = tabel.getElementsByTagName('tbody')[0].rows;
+        
+        document.getElementById('itemCount').value=baris.length;
+    }
+</script>
+
+    <form id="myForm" action="/get_order_items" method="post">
+        <!-- Single Page Header start -->
+        <div class="container-fluid page-header py-5">
+            <h1 class="text-center text-white display-6">Checkout</h1>
+            <ol class="breadcrumb justify-content-center mb-0">
+                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                <li class="breadcrumb-item active text-white">Checkout</li>
+            </ol>
+        </div>
+        <!-- Single Page Header End -->
+
+        <!--
+        {{range .Cart}}    
+            <div class="col-md-6 col-lg-6 col-xl-4">
+                <div class="rounded position-relative fruite-item">
+                    <div class="p-4 border border-secondary border-top-0 rounded-bottom">
+                        <h4>ID Cart: {{.ID}}</h4>
+                        <p>User: {{.UserID}}</p>
+                        <p>Created At:{{.CreatedAt}}</p>
+                    </div>
+                </div>
+            </div>
+        {{end}}
+        -->
+        
+        <!-- Checkout Page Start -->
+        {{range .User}}    
+        
+        <div class="container-fluid py-5">
+            <div class="container py-5">
+                <h1 class="mb-4">Billing details</h1>
+                    <div class="row g-5">
+                        <div class="col-md-12 col-lg-6 col-xl-7">
+                            <div class="row">
+                                <div class="col-md-12 col-lg-6">
+                                    <div class="form-item w-100">
+                                        <label class="form-label my-3">First Name<sup>*</sup></label>
+                                        <input type="text" class="form-control" readonly value="{{.FirstName}}">
+                                    </div>
+                                </div>
+                                <div class="col-md-12 col-lg-6">
+                                    <div class="form-item w-100">
+                                        <label class="form-label my-3">Last Name<sup>*</sup></label>
+                                        <input type="text" class="form-control" readonly value="{{.LastName}}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12 col-lg-6">
+                                    <div class="form-item w-100">
+                                        <label class="form-label my-3">Username<sup>*</sup></label>
+                                        <input type="text" class="form-control" readonly value="{{.ID}}">
+                                    </div>
+                                </div>
+                                <div class="col-md-12 col-lg-6">
+                                    <div class="form-item w-100">
+                                        <label class="form-label my-3">Email Address<sup>*</sup></label>
+                                        <input type="text" class="form-control" readonly value="{{.Email}}">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-item">
+                                <label class="form-label my-3">Address <sup>*</sup></label>
+                                <input type="text" class="form-control" readonly value="{{.Alamat}}">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12 col-lg-6">
+                                    <div class="form-item w-100">
+                                        <label class="form-label my-3">Country<sup>*</sup></label>
+                                        <input type="text" class="form-control" readonly value="{{.Negara}}">
+                                    </div>
+                                </div>
+                                <div class="col-md-12 col-lg-6">
+                                    <div class="form-item w-100">
+                                        <label class="form-label my-3">Town/City<sup>*</sup></label>
+                                        <input type="text" class="form-control" readonly value="{{.Kota}}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12 col-lg-6">
+                                    <div class="form-item w-100">
+                                        <label class="form-label my-3">Mobile<sup>*</sup></label>
+                                        <input type="text" class="form-control" readonly value="{{.Telepon}}">
+                                    </div>
+                                </div>
+                                <div class="col-md-12 col-lg-6">
+                                    <div class="form-item w-100">
+                                        <label class="form-label my-3">Postcode/Zip<sup>*</sup></label>
+                                        <input type="text" class="form-control" readonly value="{{.KodePos}}">
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="form-item">
+                                <textarea name="text" class="form-control" spellcheck="false" cols="30" rows="6" placeholder="Oreder Notes (Optional)"></textarea>
+                            </div>
+                        </div>
+        {{end}}                
+                        <div class="col-md-12 col-lg-6 col-xl-5">
+                            <div class="table-responsive">
+                                <table class="table" id="dynamicTable">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Products</th>
+                                            <th scope="col">Name</th>
+                                            <th scope="col" style="text-align: right;">Price</th>
+                                            <th scope="col" style="text-align: right;">Quantity</th>
+                                            <th scope="col" style="text-align: right;">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{range .CartItems}}
+                                        <tr>
+                                            <th scope="row">
+                                                <div class="d-flex align-items-center mt-2">
+                                                    <img src="/{{.IconPath}}" class="img-fluid rounded-circle" style="width: 90px; height: 90px;" alt="">
+                                                </div>
+                                            </th>
+                                            <td class="py-5">
+                                                {{.NamaBarang}}
+                                                <input type="hidden" size="2" style="text-align: center;" class="form-control p-1" tabindex="-1" id="id{{.Index}}" name="id{{.Index}}" readonly value="{{.IdBarang}}"/>
+                                            </td>
+                                            <td class="py-5" style="text-align: right;">
+                                                ${{.Harga}}
+                                                <input type="hidden" size="3" style="text-align: right;" class="form-control p-1" tabindex="-1" id="harga{{.Index}}" name="harga{{.Index}}" readonly value="{{.Harga}}"/>
+                                            </td>
+                                            <td class="py-5" style="text-align: right;">
+                                                {{.Jumlah}}
+                                                <input type="hidden" size="3" style="text-align: right;" class="form-control p-1" tabindex="-1" id="jumlah{{.Index}}" name="jumlah{{.Index}}" readonly value="{{.Jumlah}}"/>
+                                            </td>
+                                            <td class="py-5" style="text-align: right;">$<span class="desimal">{{printf "%.2f" .Total}}</span></td>
+                                        </tr>
+                                        {{end}}
+                                    </tbody>
+                                    <tfoot>  
+                                        <tr>
+                                            <th scope="row">
+                                            </th>
+                                            <td class="py-5"></td>
+                                            <td class="py-5"></td>
+                                            <td class="py-5">
+                                                <p class="mb-0 text-dark py-3"><b>Subtotal</b></p>
+                                                <input type="hidden" size="1" style="text-align: center;" class="form-control p-1" tabindex="-1" id="itemCount" name="itemCount" readonly value=""/>
+                                            </td>
+                                            <td class="py-5" style="text-align: right;">
+                                                <div class="py-3">
+                                                    <p class="mb-0 text-dark">${{printf "%.2f" .TotalCheckOut}}</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">
+                                            </th>
+                                            <td style="text-align: right;" colspan="3" class="py-5">
+                                                <p class="mb-0 text-dark py-3"><b>Shipping Fee (Flat rate)</b></p>
+                                            </td>
+                                            <td colspan="3" class="py-5" style="text-align: right;">
+                                                <div class="py-3">
+                                                    <label class="mb-0 text-dark" for="Shipping-2">$3.00</label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">
+                                            </th>
+                                            <th scope="row">
+                                            </th>
+                                            <th scope="row">
+                                            </th>
+                                            <td class="py-5">
+                                                <p class="mb-0 text-dark py-3"><b>TOTAL</b></p>
+                                            </td>
+                                            <td class="py-5">
+                                                <div class="py-3">
+                                                    <p id="totalFinal" class="mb-0 text-dark">${{printf "%.2f" .TotalCheckOutFinal}}</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <div class="row g-4 text-center align-items-center justify-content-center border-bottom py-3">
+                                <div class="col-12">
+                                    <div class="form-check text-start my-3">
+                                        <input type="radio" name="payment" value="transfer" class="form-check-input bg-primary border-0" id="Transfer-1" name="Transfer" value="Transfer">
+                                        <label class="form-check-label" for="Transfer-1">Direct Bank Transfer</label>
+                                    </div>
+                                    <p class="text-start text-dark">Make your payment directly into our bank account. Please use your Order ID as the payment reference. Your order will not be shipped until the funds have cleared in our account.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-4 text-center align-items-center justify-content-center border-bottom py-3">
+                                <div class="col-12">
+                                    <div class="form-check text-start my-3">
+                                        <input type="radio" name="payment" value="COD" class="form-check-input bg-primary border-0" id="Delivery-1" name="Delivery" value="Delivery">
+                                        <label class="form-check-label" for="Delivery-1">Cash On Delivery</label>
+                                    </div>
+                                    <p class="text-start text-dark">Pay for your order in cash when it arrives at your doorstep.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-4 text-center align-items-center justify-content-center pt-4">
+                                <button type="button" onclick="submitForm()" class="btn border-secondary py-3 px-4 text-uppercase w-100 text-primary">Place Order</button>
+                            </div>
+                        </div>
+                    </div>
+                
+            </div>
+        </div>
+        <!-- Checkout Page End -->
+     </form>
+{{end}}

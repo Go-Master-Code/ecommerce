@@ -1,0 +1,249 @@
+{{template "layout" .}}
+{{define "main"}}
+
+<script>
+    window.onload = function() {
+        formatFloat();
+        HitungTotal();
+    };
+    
+    function formatFloat() {
+        const jmlBaris= HitungJumlahBaris()
+        
+        // Lakukan iterasi pada semua field subtotal
+        for (let i = 0; i <jmlBaris; i++) {
+            const subtotalRow = document.getElementById("subtotal"+i).value;
+            const subtotalFloat = parseFloat(subtotalRow) || 0;
+            document.getElementById("subtotal"+i).value = subtotalFloat.toFixed(2);
+            //alert(subtotalFloat)
+        }
+    }
+
+    function HitungJumlahBaris() {
+        // Mendapatkan elemen tabel
+        var tabel = document.getElementById('dynamicTable');
+        
+        // Mendapatkan semua baris pada tbody (mengabaikan baris header)
+        var baris = tabel.getElementsByTagName('tbody')[0].rows;
+        
+        document.getElementById('itemCount').value=baris.length
+        return baris.length
+    }
+
+    function UpdateTotal(elemen) {
+        const idx = elemen.dataset.index;
+
+        //hitung subtotal per row
+        const hargaRow = document.getElementById("harga"+idx).value;
+        const qtyRow = document.getElementById("jumlah"+idx).value;
+
+        // Ubah ke angka
+        const hrg = parseFloat(hargaRow) || 0;
+        const qty = parseFloat(qtyRow) || 0;
+
+        const hasil = hrg*qty;
+
+        document.getElementById("subtotal"+idx).value = hasil.toFixed(2);
+
+        //Update total
+        document.getElementById("total").innerText = hasil.toFixed(2);
+
+        HitungTotal();
+    }
+
+    function ClickPlus(elemen) {
+        const idx = elemen.dataset.index;
+
+        //hitung subtotal per row
+        const hargaRow = document.getElementById("harga"+idx).value;
+        const qtyRow = document.getElementById("jumlah"+idx).value;
+
+        // Ubah ke angka
+        const hrg = parseFloat(hargaRow) || 0;
+        const qty = parseFloat(qtyRow) || 0;
+
+        const hasil = hrg+(hrg*qty);
+
+        document.getElementById("subtotal"+idx).value = hasil.toFixed(2);
+
+        HitungTotal();
+    }
+
+    function ClickMinus(elemen) {
+        const idx = elemen.dataset.index;
+
+        //hitung subtotal per row
+        const hargaRow = document.getElementById("harga"+idx).value;
+        const qtyRow = document.getElementById("jumlah"+idx).value;
+
+        // Ubah ke angka
+        const hrg = parseFloat(hargaRow) || 0;
+        const qty = parseFloat(qtyRow) || 0;
+
+        const hasil = hrg*qty-hrg;
+
+        document.getElementById("subtotal"+idx).value = hasil.toFixed(2);
+
+        //Update total
+        document.getElementById("total").innerText = hasil.toFixed(2);
+
+        HitungTotal();
+    }
+
+    function HitungTotal() {
+        const jmlBaris= HitungJumlahBaris()
+
+        let total=0.0; //inisiasi var total
+        let subtotal=0.0; //inisiasi var total
+        
+        // Lakukan iterasi pada semua field subtotal
+        for (let i = 0; i <jmlBaris; i++) {
+            subtotal=parseFloat(document.getElementById("subtotal"+i).value);
+            total=total+subtotal;
+            //alert("Total: "+total);
+        }
+        hasilAkhir=total+3;
+        hasilAkhirFormated=hasilAkhir.toFixed(2);
+
+        hasil=total.toFixed(2);
+
+        document.getElementById("total").innerText = "$"+hasil;
+        document.getElementById("endTotal").innerText = "$"+hasilAkhirFormated;
+    }
+</script>
+
+<!-- Single Page Header start -->
+    <div class="container-fluid page-header py-5">
+        <h1 class="text-center text-white display-6">Cart</h1>
+        <ol class="breadcrumb justify-content-center mb-0">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active text-white">Cart</li>
+        </ol>
+    </div>
+    <!-- Single Page Header End -->
+    
+    {{range .Cart}}    
+        <div class="col-md-6 col-lg-6 col-xl-4">
+            <div class="rounded position-relative fruite-item">
+                <div class="p-4 border border-secondary border-top-0 rounded-bottom">
+                    <h4>ID Cart: {{.ID}}</h4>
+                    <p>User: {{.UserID}}</p>
+                    <p>Created At:{{.CreatedAt}}</p>
+                </div>
+            </div>
+        </div>
+    {{end}}
+
+    <!--Form untuk update isi cart-->
+    
+    <!-- Cart Page Start -->
+    <div class="container-fluid py-5">
+        <div class="container py-5">
+            <div class="table-responsive">
+                
+                    <table class="table" id="dynamicTable">
+                        <thead>
+                            <tr>
+                            <th scope="col">Products</th>
+                            <th scope="col">ID</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col">Total</th>
+                            <th scope="col">Handle</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                            {{range .CartItems}}
+                            <tr>
+                                <th scope="row">
+                                    <div class="d-flex align-items-center">
+                                    </div>
+                                </th>
+                                <td>
+                                    <p class="mb-0 mt-4"><input type="text" size="1" style="text-align: center;" class="form-control p-1" tabindex="-1" id="id{{.Index}}" name="id{{.Index}}" readonly value="{{.IdBarang}}"/></p>
+                                    <!--<p class="mb-0 mt-4">{{.Harga}}</p>-->
+                                </td>
+                                <td>
+                                    <p class="mb-0 mt-4">{{.NamaBarang}}</p>
+                                </td>
+                                <td>
+                                    <p class="mb-0 mt-4"><input type="text" size="3" style="text-align: right;" class="form-control p-1" tabindex="-1" id="harga{{.Index}}" name="harga{{.Index}}" readonly value="{{.Harga}}"/></p>
+                                    <!--<p class="mb-0 mt-4">{{.Harga}}</p>-->
+                                </td>
+                                <td>
+                                    <div class="input-group quantity mt-4" style="width: 100px;">
+                                        <div class="input-group-btn">
+                                            <button type="button" id="btnminus{{.Index}}" data-index="{{.Index}}" onclick="ClickMinus(this)" class="btn btn-sm btn-minus rounded-circle bg-light border" >
+                                            <i class="fa fa-minus"></i>
+                                            </button>
+                                        </div>
+                                        <input type="text" autocomplete="off" onclick="HitungJumlahBaris()" onchange="UpdateTotal(this)" data-index="{{.Index}}" onkeyup="UpdateTotal(this)" id="jumlah{{.Index}}" name="jumlah{{.Index}}" class="form-control form-control-sm text-center border-0" value="{{.Jumlah}}">
+                                        
+                                        <div class="input-group-btn">
+                                            <button type="button" id="btnminus{{.Index}}" data-index="{{.Index}}" onclick="ClickPlus(this)" class="btn btn-sm btn-plus rounded-circle bg-light border">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="mb-0 mt-4"><input type="text" size="3" style="text-align: right;" class="form-control p-1" tabindex="-1" id="subtotal{{.Index}}" name="subtotal{{.Index}}" readonly value="{{.Total}}"/></p>
+                                    <!--<p class="mb-0 mt-4">{{.Total}}</p>-->
+                                </td>
+                                <td>
+                                    <a href="/delete?id_barang={{.IdBarang}}&id_cart={{.IdCart}}">
+                                        <button class="btn btn-md rounded-circle bg-light border mt-4" >
+                                            <i class="fa fa-times text-danger"> Delete</i>
+                                        </button>
+                                    </a>
+                                </td>
+                            
+                            </tr>
+                            {{end}}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td><p class="mb-0 mt-4">Item Count:</p></td>
+                                <td>
+                                    <p class="mb-0 mt-4"><input type="text" size="1" style="text-align: center;" class="form-control p-1" tabindex="-1" id="itemCount" name="itemCount" readonly value=""/></p>
+                                </td>
+                            </tr>
+                        </tfoot>                                    
+                    </table>
+            </div>
+        
+            
+            <div class="row g-4 justify-content-end">
+                <div class="col-8"></div>
+                <div class="col-sm-8 col-md-7 col-lg-6 col-xl-4">
+                    <div class="bg-light rounded">
+                        <div class="p-4">
+                            <h1 class="display-6 mb-4">Cart <span class="fw-normal">Total</span></h1>
+                            <div class="d-flex justify-content-between mb-4">
+                                <h5 class="mb-0 me-4">Subtotal:</h5>
+                                <p id="total" class="mb-0">$</p>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <h5 class="mb-0 me-4">Shipping</h5>
+                                <div class="">
+                                    <p class="mb-0">Flat rate: $3.00</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="py-4 mb-4 border-top border-bottom d-flex justify-content-between">
+                            <h5 class="mb-0 ps-4 me-4">Total</h5>
+                            <p id="endTotal" class="mb-0 pe-4">$</p>
+                        </div>
+                        <a class="nav-item nav-link active">
+                            <button class="btn border-secondary rounded-pill px-4 py-3 text-primary text-uppercase mb-4 ms-4" type="button" onclick="submitForm()">Proceed Checkout</button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Cart Page End -->
+{{end}}
