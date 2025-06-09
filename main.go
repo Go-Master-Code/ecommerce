@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Go-Master-Code/ecommerce/handler"
+	"github.com/Go-Master-Code/ecommerce/middleware"
 )
 
 func main() {
@@ -15,11 +16,11 @@ func main() {
 	//mux.HandleFunc("/home", handler.HomeHandler)
 	mux.HandleFunc("/shop", handler.ShopHandler)
 	mux.HandleFunc("/cart", handler.CartViewHandler)
-	mux.HandleFunc("/delete", handler.DeleteCartItems)        //handler untuk delete barang
-	mux.HandleFunc("/add", handler.AddCartItems)              //handler untuk add barang
-	mux.HandleFunc("/update", handler.UpdateCartItems)        //handler untuk update items pada cart
-	mux.HandleFunc("/checkout", handler.CheckoutHandler)      //handler untuk checkout (data cart final)
-	mux.HandleFunc("/get_order_items", handler.GetOrderItems) //handler untuk save data master order
+	mux.HandleFunc("/delete", middleware.NoCache(handler.DeleteCartItems))        //handler untuk delete barang
+	mux.HandleFunc("/add", middleware.NoCache(handler.AddCartItems))              //handler untuk add barang
+	mux.HandleFunc("/update", handler.UpdateCartItems)                            //handler untuk update items pada cart
+	mux.HandleFunc("/checkout", handler.CheckoutHandler)                          //handler untuk checkout (data cart final)
+	mux.HandleFunc("/get_order_items", middleware.NoCache(handler.GetOrderItems)) //handler untuk save data master order
 
 	fileServer := http.FileServer(http.Dir("assets")) //load directory
 	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
