@@ -111,17 +111,14 @@
                                             </div>
                                             <div class="text-white bg-secondary px-3 py-1 rounded position-absolute" style="top: 10px; left: 10px;">{{.Kategori.NamaKategori}}</div>
                                             <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                
-                                                <h4>ID: {{.ID}} | {{.NamaBarang}}</h4>
+                                                <h4></h4>
+                                                <h4>ID:{{.ID}} | {{.NamaBarang}}</h4>
                                                 <p>{{.Deskripsi}}</p>
                                                 <div class="d-flex justify-content-between flex-lg-wrap">
                                                     <p class="text-dark fs-5 fw-bold mb-0">${{.Harga}} / kg</p>
                                                     <p class="text-dark fs-5 fw-bold mb-0">Qty:{{.Stok}} kg</p>
-                                                    
-                                                    <a href="/add?id={{.ID}}" class="btn border border-secondary rounded-pill px-3 text-primary">
-                                                        <button class="fa fa-shopping-bag me-2 text-primary">
-                                                            Add to cart
-                                                        </button>
+                                                    <a href="/add?id_brg_shop={{.ID}}&t={{$.NowUnix}}" class="btn btn-outline-primary">
+                                                        <i class="fa fa-shopping-bag me-2"></i> Add to cart
                                                     </a>
                                                 </div>
                                             </div>
