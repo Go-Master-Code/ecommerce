@@ -7,6 +7,7 @@ import (
 	"path"
 	"strconv"
 	"text/template"
+	"time"
 
 	"github.com/Go-Master-Code/ecommerce/config"
 	"github.com/Go-Master-Code/ecommerce/models"
@@ -16,10 +17,6 @@ import (
 
 // inisiasi database
 var db = config.OpenConnectionMaster()
-
-// global var sementara untuk idCart dan idUser
-var idUser = "budi"
-var idCart = 1
 
 func Login(w http.ResponseWriter, r *http.Request) { //parameter handler func wajib seperti ini
 	//handler Form ini hanya bisa menerima request berupa get
@@ -163,23 +160,23 @@ func ShopHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cart := models.TampilkanCart(db, idUser)
-	log.Println("Eksekusi tampilkan cart sukses!")
 	barang := models.TampilkanBarang(db)
-	log.Println("Eksekusi tampilkan barang sukses!")
 	kategori := models.ShowKategori(db)
-	log.Println("Eksekusi show kategori sukses!")
+	cart := models.TampilkanCart(db, username)
+	log.Println("Eksekusi tampilkan shop sukses!")
 
 	data := struct { //buat struct yang menampung data barang dan kategori barang
-		Cart       []models.Cart
 		Barangs    []models.Barang
 		Kategories []models.Kategori
+		Cart       []models.Cart
 		Username   string
+		NowUnix    int64 //Tambahkan timestamp ke data template
 	}{
-		Cart:       cart,
 		Barangs:    barang,
 		Kategories: kategori,
+		Cart:       cart,
 		Username:   username,
+		NowUnix:    time.Now().Unix(), //Query &t=unix_timestamp bikin URL selalu beda tiap load halaman → browser tidak cache request.
 	}
 
 	err = tmpl.Execute(w, data)
@@ -213,12 +210,14 @@ func CartViewHandler(w http.ResponseWriter, r *http.Request) {
 		Cart      []models.Cart
 		CartItems []models.CartItemsView
 		Username  string
+		NowUnix   int64 //Tambahkan timestamp ke data template
 		//Kategories []models.Kategori
 	}{
 		Cart:      cart,
 		CartItems: cartItems,
 		Username:  username,
 		//Kategories: kategori,
+		NowUnix: time.Now().Unix(), //Query &t=unix_timestamp bikin URL selalu beda tiap load halaman → browser tidak cache request.
 	}
 
 	err = tmpl.Execute(w, data)
@@ -230,44 +229,58 @@ func CartViewHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteCartItems(w http.ResponseWriter, r *http.Request) {
+	//sudah pakai middleware untuk disable cache
+
 	log.Println("Masuk ke delete item")
-	idBarang := r.URL.Query().Get("id")
-	idCart := r.URL.Query().Get("cart")
+	idBarang := r.URL.Query().Get("id_brg_delete")
+	idCart := r.URL.Query().Get("id_cart_delete")
 
 	log.Println("ID barang delete barang dari URL: " + idBarang)
 	log.Println("ID cart delete barang dari URL: " + idCart)
 	// //ambil data parmeter id dari URL
 
-	models.DeleteItem(db, idCart, idBarang)
+	idBarangInt, _ := strconv.Atoi(idBarang)
+
+	models.DeleteItem(db, idCart, idBarangInt)
 	log.Println("Data :" + idBarang + " berhasil dihapus!")
-	http.Redirect(w, r, "/cart", http.StatusMovedPermanently)
+	http.Redirect(w, r, "/cart", http.StatusSeeOther)
 }
 
 func AddCartItems(w http.ResponseWriter, r *http.Request) {
-	log.Println("Masuk handler /add")
+	//sudah pakai middleware untuk disable cache
+
+	//log.Println("Masuk handler /add")
+
+	//log.Println("URL Query:", r.URL.RawQuery)
+	idBarang := r.URL.Query().Get("id_brg_shop")
+
+	//log.Println("ID barang: " + idBarang)
 
 	session, _ := store.Get(r, "session-name")
-
-	// Ambil username dari session
 	username, _ := session.Values["username"].(string)
-
-	var idBarang string = r.URL.Query().Get("id")
-
-	log.Println("ID barang: " + idBarang)
 
 	cart := models.TampilkanCart(db, username)
 	idCart := cart[0].ID
-	log.Println("Cart ID: " + cart[0].ID)
+	//log.Println("Cart ID: " + idCart)
 
 	idBarangInt, _ := strconv.Atoi(idBarang)
 	idCartInt, _ := strconv.Atoi(idCart)
 
 	models.AddItemToCart(db, idCartInt, idBarangInt, 1)
-	http.Redirect(w, r, "/shop", http.StatusMovedPermanently)
+	//log.Println("Barang: " + idBarang + "telah ditambahkan!")
+	http.Redirect(w, r, "/shop", http.StatusSeeOther)
 }
 
 func UpdateCartItems(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
+		//cetak username yang didapat dari session setelah validasiAJAX
+		session, _ := store.Get(r, "session-name")
+		username, _ := session.Values["username"].(string)
+
+		cart := models.TampilkanCart(db, username)
+		idCart := cart[0].ID
+		idCartInt, _ := strconv.Atoi(idCart)
+
 		log.Println("Masuk method update data barang")
 		//ambil data dari form, lakukan post sesuai tipe form : POST
 		err := r.ParseForm()
@@ -304,7 +317,7 @@ func UpdateCartItems(w http.ResponseWriter, r *http.Request) {
 		}
 
 		log.Println(updateItemCart)
-		models.UpdateCartItems(db, idCart, updateItemCart)
+		models.UpdateCartItems(db, idCartInt, updateItemCart)
 		//setelah selesai update cart, pindah ke halaman checkout
 		http.Redirect(w, r, "/checkout", http.StatusMovedPermanently)
 	}
@@ -324,9 +337,9 @@ func CheckoutHandler(w http.ResponseWriter, r *http.Request) { //parameter handl
 		return
 	}
 
-	user := models.TampilkanUser(db, idUser)
-	cart := models.TampilkanCart(db, idUser)
-	cartItems := models.TampilkanCartItems(db, idUser)
+	user := models.TampilkanUser(db, username)
+	cart := models.TampilkanCart(db, username)
+	cartItems := models.TampilkanCartItems(db, username)
 	//cartItem := models.ShowKategori(db)
 
 	//hitung total harga
@@ -394,9 +407,12 @@ func CheckoutHandler(w http.ResponseWriter, r *http.Request) { //parameter handl
 
 func GetOrderItems(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
+		//ambil session username
+		session, _ := store.Get(r, "session-name")
+		username, _ := session.Values["username"].(string)
 
 		payment := r.FormValue("payment")
-		idOrder := models.SaveDataOrder(db, "budi", payment)
+		idOrder := models.SaveDataOrder(db, username, payment)
 
 		log.Println("ID Order tersimpan: " + idOrder + " telah tersimpan!")
 
@@ -447,13 +463,12 @@ func GetOrderItems(w http.ResponseWriter, r *http.Request) {
 		log.Println(bdo)
 
 		//Save data detil order
-
 		result := db.Table("order_items").Create(bdo)
 		if result.Error != nil {
 			panic(result.Error)
 		}
 
-		http.Redirect(w, r, "/shop", http.StatusMovedPermanently)
+		http.Redirect(w, r, "/shop", http.StatusSeeOther)
 		/*
 			models.UpdateCartItems(db, idCart, updateItemCart)
 			//setelah selesai update cart, pindah ke halaman checkout
