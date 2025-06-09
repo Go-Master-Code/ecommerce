@@ -21,40 +21,58 @@ INSERT INTO `barang` (`id`, `nama_barang`, `harga`, `stok`, `id_kategori`, `desk
 	(3, 'Apricots', 3.18, 5, 1, 'Apricots from Italia', 'static/product_image/Apricots.jpg', 'static/product_icon/ApricotsIcon.jpg', '2025-06-04 09:42:06.000', NULL, NULL),
 	(4, 'Oranges', 2.35, 14, 1, 'Oranges from Australia', 'static/product_image/Oranges.jpg', 'static/product_icon/OrangesIcon.jpg', '2025-06-04 09:43:52.000', NULL, NULL),
 	(5, 'Apple', 1.95, 27, 1, 'Apple from China', 'static/product_image/Apple.jpg', 'static/product_icon/AppleIcon.jpg', '2025-06-04 09:43:53.000', NULL, NULL),
-	(6, 'Banana', 2.2, 11, 1, 'Banana from Phipines', 'static/product_image/Banana.jpg', 'static/product_icon/BananaIcon.jpg', '2025-06-04 09:44:43.000', NULL, NULL);
+	(6, 'Banana', 2.2, 11, 2, 'Banana from Phipines', 'static/product_image/Banana.jpg', 'static/product_icon/BananaIcon.jpg', '2025-06-04 09:44:43.000', NULL, NULL);
 
 -- Dumping data for table ecommerce.cart: ~2 rows (approximately)
 INSERT INTO `cart` (`id_cart`, `user_id`, `created_at`, `updated_at`) VALUES
 	(1, 'budi', '2025-06-05 11:52:18', '2025-06-05 18:52:18'),
 	(2, 'rini', '2025-06-08 02:27:30', '2025-06-08 09:27:31');
 
--- Dumping data for table ecommerce.cart_items: ~5 rows (approximately)
+-- Dumping data for table ecommerce.cart_items: ~7 rows (approximately)
 INSERT INTO `cart_items` (`id_cart`, `id_barang`, `jumlah`) VALUES
 	(1, 2, 3),
-	(1, 3, 5),
-	(2, 1, 1),
-	(2, 4, 3),
-	(2, 6, 4);
+	(1, 4, 2),
+	(1, 5, 1),
+	(1, 6, 5),
+	(2, 1, 5),
+	(2, 4, 4),
+	(2, 5, 3);
 
 -- Dumping data for table ecommerce.kategori_barang: ~2 rows (approximately)
 INSERT INTO `kategori_barang` (`id`, `nama_kategori`) VALUES
 	(1, 'Fruits'),
 	(2, 'Vegetables');
 
--- Dumping data for table ecommerce.order: ~3 rows (approximately)
+-- Dumping data for table ecommerce.order: ~7 rows (approximately)
 INSERT INTO `order` (`id_order`, `user_id`, `created_at`, `payment`, `status`) VALUES
 	(7, 'budi', '2025-06-08 01:41:25', 'transfer', 'Pending'),
 	(8, 'budi', '2025-06-08 02:25:23', 'COD', 'Pending'),
-	(9, 'budi', '2025-06-08 02:26:55', 'COD', 'Pending');
+	(9, 'budi', '2025-06-08 02:26:55', 'COD', 'Pending'),
+	(10, 'budi', '2025-06-09 11:25:26', 'COD', 'Pending'),
+	(11, 'budi', '2025-06-09 13:39:58', 'transfer', 'Pending'),
+	(12, 'budi', '2025-06-09 13:44:42', 'transfer', 'Pending'),
+	(13, 'rini', '2025-06-09 13:48:40', 'transfer', 'Pending');
 
--- Dumping data for table ecommerce.order_items: ~6 rows (approximately)
+-- Dumping data for table ecommerce.order_items: ~18 rows (approximately)
 INSERT INTO `order_items` (`id_order`, `id_barang`, `jumlah`, `harga_jual`) VALUES
 	(7, 2, 4, 4.1),
 	(7, 3, 2, 3.18),
 	(8, 2, 9, 4.1),
 	(8, 3, 1, 3.18),
 	(9, 2, 3, 4.1),
-	(9, 3, 5, 3.18);
+	(9, 3, 5, 3.18),
+	(10, 2, 3, 4.1),
+	(10, 5, 4, 1.95),
+	(11, 2, 3, 4.1),
+	(11, 4, 2, 2.35),
+	(11, 5, 1, 1.95),
+	(11, 6, 5, 2.2),
+	(12, 1, 1, 3.2),
+	(12, 2, 2, 4.1),
+	(12, 4, 4, 2.35),
+	(13, 1, 5, 3.2),
+	(13, 4, 4, 2.35),
+	(13, 5, 3, 1.95);
 
 -- Dumping data for table ecommerce.user: ~2 rows (approximately)
 INSERT INTO `user` (`id`, `email`, `password`, `id_cart`, `first_name`, `last_name`, `telepon`, `negara`, `alamat`, `kota`, `kode_pos`) VALUES
