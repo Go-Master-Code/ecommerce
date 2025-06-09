@@ -25,6 +25,7 @@ ecommerce
 ├── config/ # File config koneksi database
 ├── db/ # Berisi script sql untuk MySQL
 ├── handler/ # Berisi handler
+├── middleware/ # Berisi middleware untuk disable cache di client
 ├── models/ # Berisi file-file model yang merepresentasikan struktur data pada tabel dan operasi database
 ├── views/ # Berisi file-file html yang berfungsi sebagai tampilan frontend web
 ├── go.mod # Go module
