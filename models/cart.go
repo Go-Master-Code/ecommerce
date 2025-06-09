@@ -90,11 +90,14 @@ func TampilkanCartItems(db *gorm.DB, idUser string) []CartItemsView {
 			Index:      i, // Mulai dari nol
 		})
 	}
+
+	log.Println("Show detail cart")
+
 	return civ
 
 }
 
-func DeleteItem(db *gorm.DB, idCart string, idBarang string) {
+func DeleteItem(db *gorm.DB, idCart string, idBarang int) {
 	var ci []CartItems
 	//Field deleted at akan terisi, record barang masih ada, tidak dihapus
 	err := db.Table("cart_items").Where("id_cart = ? and id_barang =?", idCart, idBarang).Delete(&ci).Error
@@ -136,5 +139,4 @@ func UpdateCartItems(db *gorm.DB, idCart int, updateItemCart []UpdateItemCart) {
 	for _, p := range updateItemCart { //lakukan iterasi terhadap slice updateItemCart dengan var p sebagai recordnya
 		db.Model(&CartItems{}).Where("id_cart = ? and id_barang =?", idCart, p.IdBarang).Updates(CartItems{Jumlah: p.Jumlah})
 	}
-
 }
