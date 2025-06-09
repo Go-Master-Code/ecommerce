@@ -103,7 +103,7 @@ func DeleteItem(db *gorm.DB, idCart string, idBarang string) {
 	}
 }
 
-func AddCartItem(db *gorm.DB, idCart int, idBarang int, jumlah float64) {
+func AddItemToCart(db *gorm.DB, idCart int, idBarang int, jumlah float64) {
 	addItemCart := AddItemCart{ //masukkan data (single) pada struct
 		IdCart:   idCart,
 		IdBarang: idBarang,
