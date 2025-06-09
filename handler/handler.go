@@ -164,8 +164,11 @@ func ShopHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cart := models.TampilkanCart(db, idUser)
+	log.Println("Eksekusi tampilkan cart sukses!")
 	barang := models.TampilkanBarang(db)
+	log.Println("Eksekusi tampilkan barang sukses!")
 	kategori := models.ShowKategori(db)
+	log.Println("Eksekusi show kategori sukses!")
 
 	data := struct { //buat struct yang menampung data barang dan kategori barang
 		Cart       []models.Cart
@@ -228,8 +231,8 @@ func CartViewHandler(w http.ResponseWriter, r *http.Request) {
 
 func DeleteCartItems(w http.ResponseWriter, r *http.Request) {
 	log.Println("Masuk ke delete item")
-	idBarang := r.URL.Query().Get("id_barang")
-	idCart := r.URL.Query().Get("id_cart")
+	idBarang := r.URL.Query().Get("id")
+	idCart := r.URL.Query().Get("cart")
 
 	log.Println("ID barang delete barang dari URL: " + idBarang)
 	log.Println("ID cart delete barang dari URL: " + idCart)
@@ -237,19 +240,29 @@ func DeleteCartItems(w http.ResponseWriter, r *http.Request) {
 
 	models.DeleteItem(db, idCart, idBarang)
 	log.Println("Data :" + idBarang + " berhasil dihapus!")
-	// http.Redirect(w, r, "/cart", http.StatusMovedPermanently)
+	http.Redirect(w, r, "/cart", http.StatusMovedPermanently)
 }
 
 func AddCartItems(w http.ResponseWriter, r *http.Request) {
-	idBarang := r.URL.Query().Get("id_barang")
-	idCartInt := 1
+	log.Println("Masuk handler /add")
+
+	session, _ := store.Get(r, "session-name")
+
+	// Ambil username dari session
+	username, _ := session.Values["username"].(string)
+
+	var idBarang string = r.URL.Query().Get("id")
+
+	log.Println("ID barang: " + idBarang)
+
+	cart := models.TampilkanCart(db, username)
+	idCart := cart[0].ID
+	log.Println("Cart ID: " + cart[0].ID)
 
 	idBarangInt, _ := strconv.Atoi(idBarang)
+	idCartInt, _ := strconv.Atoi(idCart)
 
-	log.Println("Masuk ke method add")
-	log.Println("ID barang add barang dari URL: " + idBarang)
-
-	models.AddCartItem(db, idCartInt, idBarangInt, 1)
+	models.AddItemToCart(db, idCartInt, idBarangInt, 1)
 	http.Redirect(w, r, "/shop", http.StatusMovedPermanently)
 }
 
