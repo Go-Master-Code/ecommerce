@@ -1,50 +1,64 @@
 package models
 
 import (
-	"fmt"
-	"strconv"
 	"time"
 
 	"gorm.io/gorm"
 )
 
-type Order struct {
-	ID        string    `gorm:"primary_key;column:id_cart;autoIncrement"`
-	UserID    string    `gorm:"column:user_id"`
-	CreatedAt time.Time `gorm:"column:created_at;autoCreateTime"` //gorm tag untuk autocreatetime
-	Payment   string    `gorm:"column:payment"`
-	Status    string    `gorm:"column:status"`
-	//Items     []CartItem `gorm:"foreignKey:id_cart;references:id_cart"` //relasi 1 to many: 1 user menangani beberapa transaksi. Buat foreign key nya, dan buat var User dari struct User serperti ini
-	//relasi many to many
-	//format: tabel_detil;foreignKey:PK_tabel_ini;joinForeignKey:nama_field_PK_di_tabel_detil;references:PK_tabel_master_lainnya;joinReferences:nama_field_PK_di_tabel_detil
-	//Items []Barang `gorm:"many2many:cart_items;foreignKey:id_cart;joinForeignKey:id_barang;references:id_cart;joinReferences:id_cart"`
+type Barang struct {
+	ID         int            `gorm:"primary_key;column:id;autoIncrement"`
+	IdKategori int            `gorm:"column:id_kategori"`
+	NamaBarang string         `gorm:"column:nama_barang"`
+	Harga      float64        `gorm:"column:harga"`
+	Stok       int            `gorm:"column:stok"`
+	Deskripsi  string         `gorm:"column:deskripsi"`
+	ImagePath  string         `gorm:"column:image_path"`
+	CreatedAt  time.Time      `gorm:"column:created_at;autoCreateTime"`
+	UpdatedAt  time.Time      `gorm:"column:updated_at;autoCreateTime;autoUpdateTime"`
+	DeletedAt  gorm.DeletedAt `gorm:"column:deleted_at"` //tipe datanya bukan time.Time tapi gorm.DeletedAt -> penanda soft delete
+	Kategori   Kategori       `gorm:"foreignKey:id_kategori;references:id"`
+	//ItemsInCart []Cart         `gorm:"many2many:cart_items;foreignKey:id;joinForeignKey:id_barang;references:id_cart;joinReferences:id_cart"`
+
+	//JualBarang []Transaksi    `gorm:"many2many:detil_transaksi;foreignKey:id;joinForeignKey:id_barang;references:id_transaksi;joinReferences:id_transaksi"`
+	//format: tabel_many_to_many;foreignKey:PK_tabel_ini;joinForeignKey:nama_field_PK_di_tabel_detil;references:PK_tabel_master_lainnya;joinReferences:nama_field_PK_di_tabel_detil
 }
 
-func (o *Order) TableName() string {
-	return "order" //nama table pada db
+func (b *Barang) TableName() string {
+	return "barang" //nama table pada db nya adalah user_logs
 }
 
-// Save Data Master Transaksi
-func SaveDataOrder(db *gorm.DB, userID string, payment string) string {
-	order := Order{
-		UserID:  userID,
-		Payment: payment,
-		Status:  "Pending",
-	}
+func TampilkanBarang(db *gorm.DB) []Barang { //return value slice [] of Barang
+	var barang []Barang
 
-	//query: INSERT INTO `products` (`id`,`name`,`price`,`created_at`,`updated_at`) VALUES ('P001','Laptop ASUS',10250000,'2024-12-06 15:15:51.069','2024-12-06 15:15:51.069')
-	err := db.Create(&order).Error
+	err := db.Model(&Barang{}).Preload("Kategori").Find(&barang).Error
 	if err != nil {
 		panic(err)
 	}
 
-	idOrder := order.ID //simpan ID transaksi untuk add more detil_jual
-	return idOrder      //return value untuk detil transaksi
+	return barang
 }
 
-type BarangDetilOrder struct {
-	IdOrder   string  `gorm:"column:id_order"`
-	IdBarang  int     `gorm:"column:id_barang"`
-	Jumlah    float64 `gorm:"column:jumlah"`
-	HargaJual float64 `gorm:"column:harga_jual"`
+func TampilkanBarangOrderByNama(db *gorm.DB) []Barang { //return value slice [] of Barang
+	var barang []Barang
+
+	err := db.Model(&Barang{}).Preload("Kategori").Order("nama_barang asc").Find(&barang).Error
+	if err != nil {
+		panic(err)
+	}
+
+	return barang
+}
+
+func TampilkanBarangById(db *gorm.DB, idBarang string) ([]Barang, int) { //return value slice [] of Barang dan selected idKategori untuk dropdown
+	var barang []Barang
+
+	err := db.Model(&Barang{}).Preload("Kategori").Where("id = ?", idBarang).Find(&barang).Error
+	if err != nil {
+		panic(err)
+	}
+
+	idKategori := barang[0].IdKategori //mengambil idKategori dari produk terpilih untuk dijadikan default value pada dropdown
+
+	return barang, idKategori
 }
