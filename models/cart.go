@@ -153,4 +153,5 @@ func UpdateCartItems(db *gorm.DB, idCart int, updateItemCart []UpdateItemCart) {
 	for _, p := range updateItemCart { //lakukan iterasi terhadap slice updateItemCart dengan var p sebagai recordnya
 		db.Model(&CartItems{}).Where("id_cart = ? and id_barang =?", idCart, p.IdBarang).Updates(CartItems{Jumlah: p.Jumlah})
 	}
+
 }
