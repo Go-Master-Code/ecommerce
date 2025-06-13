@@ -1,5 +1,6 @@
 {{template "layout" .}}
 {{define "main"}}
+    
 <!-- Single Page Header start -->
     <div class="container-fluid page-header py-5">
         <h1 class="text-center text-white display-6">Shop</h1>
@@ -117,9 +118,13 @@
                                                 <div class="d-flex justify-content-between flex-lg-wrap">
                                                     <p class="text-dark fs-5 fw-bold mb-0">${{.Harga}} / kg</p>
                                                     <p class="text-dark fs-5 fw-bold mb-0">Qty:{{.Stok}} kg</p>
+                                                    <!--
                                                     <a href="/add?id_brg_shop={{.ID}}&t={{$.NowUnix}}" class="btn btn-outline-primary">
                                                         <i class="fa fa-shopping-bag me-2"></i> Add to cart
                                                     </a>
+                                                    -->
+                                                    
+                                                    <button class="btn btn-outline-primary" onclick="addToCart('{{.ID}}', '{{.NamaBarang}}')"><i class="fa fa-shopping-bag me-2"></i> Add to cart</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -133,4 +138,41 @@
         </div>
     </div>
     <!-- Fruits Shop End-->
+
+    <script>
+        function addToCart(productId, productName) {
+            const formData = new URLSearchParams();
+            formData.append("product_id", productId);
+            formData.append("product_name", productName);
+            //formData.append("quantity", quantity);
+
+            fetch("http://localhost:8080/add", {
+                method: "POST",
+                headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: formData.toString()
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Gagal menambahkan ke keranjang");
+                return res.text();
+            })
+            .then(message => {
+                Swal.fire({
+                icon: 'success',
+                title: productName+' added to cart!',
+                text: message,
+                confirmButtonText: 'OK'
+                });
+            })
+            .catch(error => {
+                Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: error.message,
+                confirmButtonText: 'Tutup'
+                });
+            });
+        }
+    </script>
 {{end}}
