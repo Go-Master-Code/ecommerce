@@ -200,8 +200,6 @@ func CartViewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//contoh var dibuat global
-
 	cart := models.TampilkanCart(db, username)
 	cartItems := models.TampilkanCartItems(db, username)
 	//cartItem := models.ShowKategori(db)
@@ -228,24 +226,7 @@ func CartViewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func DeleteCartItems(w http.ResponseWriter, r *http.Request) {
-	//sudah pakai middleware untuk disable cache
-
-	log.Println("Masuk ke delete item")
-	idBarang := r.URL.Query().Get("id_brg_delete")
-	idCart := r.URL.Query().Get("id_cart_delete")
-
-	log.Println("ID barang delete barang dari URL: " + idBarang)
-	log.Println("ID cart delete barang dari URL: " + idCart)
-	// //ambil data parmeter id dari URL
-
-	idBarangInt, _ := strconv.Atoi(idBarang)
-
-	models.DeleteItem(db, idCart, idBarangInt)
-	log.Println("Data :" + idBarang + " berhasil dihapus!")
-	http.Redirect(w, r, "/cart", http.StatusSeeOther)
-}
-
+// OLD METHHOD -> Add Item to cart masih reload halaman
 func AddCartItems(w http.ResponseWriter, r *http.Request) {
 	//sudah pakai middleware untuk disable cache
 
@@ -269,6 +250,77 @@ func AddCartItems(w http.ResponseWriter, r *http.Request) {
 	models.AddItemToCart(db, idCartInt, idBarangInt, 1)
 	//log.Println("Barang: " + idBarang + "telah ditambahkan!")
 	http.Redirect(w, r, "/shop", http.StatusSeeOther)
+}
+
+// eksperimental -> Add item to cart no reload
+func AddBarangToCart(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Ambil data dari form-encoded
+	idBarang := r.FormValue("product_id")
+	//jumlah := r.FormValue("quantity")
+
+	//fmt.Printf("Barang ditambahkan: %s (jumlah: %s)\n", idBarang, jumlah)
+
+	w.Header().Set("Content-Type", "text/plain")
+	//fmt.Fprintf(w, "Berhasil menambahkan %s (jumlah: %s) ke keranjang.", idBarang, jumlah)
+
+	session, _ := store.Get(r, "session-name")
+	username, _ := session.Values["username"].(string)
+
+	cart := models.TampilkanCart(db, username)
+	idCart := cart[0].ID
+
+	idBarangInt, _ := strconv.Atoi(idBarang)
+	idCartInt, _ := strconv.Atoi(idCart)
+
+	models.AddItemToCart(db, idCartInt, idBarangInt, 1)
+}
+
+// OLD METHOD DELETE ITEM FROM CART (Reload page)
+func DeleteCartItems(w http.ResponseWriter, r *http.Request) {
+	//sudah pakai middleware untuk disable cache
+
+	log.Println("Masuk ke delete item")
+	idBarang := r.URL.Query().Get("id_brg_delete")
+	idCart := r.URL.Query().Get("id_cart_delete")
+
+	log.Println("ID barang delete barang dari URL: " + idBarang)
+	log.Println("ID cart delete barang dari URL: " + idCart)
+	// //ambil data parmeter id dari URL
+
+	idBarangInt, _ := strconv.Atoi(idBarang)
+
+	models.DeleteItem(db, idCart, idBarangInt)
+	log.Println("Data :" + idBarang + " berhasil dihapus!")
+	http.Redirect(w, r, "/cart", http.StatusSeeOther)
+}
+
+// PERLU DISELIDIKI LAGI AGAR DATA BERUBAH TAPI GA RELOAD
+func DeleteBarangFromCart(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	idBarang := r.FormValue("product_id")
+
+	w.Header().Set("Content-Type", "text/plain")
+
+	session, _ := store.Get(r, "session-name")
+	username, _ := session.Values["username"].(string)
+
+	cart := models.TampilkanCart(db, username)
+	idCart := cart[0].ID
+
+	idBarangInt, _ := strconv.Atoi(idBarang)
+	//idCartInt, _ := strconv.Atoi(idCart)
+
+	models.DeleteItem(db, idCart, idBarangInt)
+	log.Println("Data :" + idBarang + " dari cart: " + idCart + " berhasil dihapus!")
 }
 
 func UpdateCartItems(w http.ResponseWriter, r *http.Request) {
@@ -379,39 +431,15 @@ func CheckoutHandler(w http.ResponseWriter, r *http.Request) { //parameter handl
 	}
 }
 
-// func SaveOrder(w http.ResponseWriter, r *http.Request) {
-// 	if r.Method == "POST" {
-// 		log.Println("Masuk method save checkout data")
-// 		//ambil data dari form, lakukan post sesuai tipe form : POST
-// 		err := r.ParseForm()
-// 		if err != nil {
-// 			log.Println(err.Error())                                        //error spesifik untuk developer
-// 			http.Error(w, "Ini bukan POST", http.StatusInternalServerError) //Error generik untuk user, pakai bahasa manusia
-// 			return
-// 		}
-
-// 		idOrder := models.SaveDataOrder(db, "budi")
-// 		log.Println("ID Order: " + idOrder + " telah tersimpan!")
-
-// 		/*
-// 			var kodeRow string = ""
-// 			var qtyRow string = ""
-// 			var hargaRow string = ""
-
-// 			log.Println("Jumlah baris :" + r.Form.Get("jmlBaris"))
-// 			//Ambil value jumlah iterasi dari form web (text box dengan id=jml)
-// 			iterasi, _ := strconv.Atoi(r.Form.Get("jmlBaris"))
-// 		*/
-// 	}
-// }
-
 func GetOrderItems(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		//ambil session username
 		session, _ := store.Get(r, "session-name")
 		username, _ := session.Values["username"].(string)
 
+		//ambil data payment method dari form
 		payment := r.FormValue("payment")
+		//Method SaveDataOrder secara default mengambalikan nilai primary key dalam hal ini id_order
 		idOrder := models.SaveDataOrder(db, username, payment)
 
 		log.Println("ID Order tersimpan: " + idOrder + " telah tersimpan!")
@@ -468,11 +496,15 @@ func GetOrderItems(w http.ResponseWriter, r *http.Request) {
 			panic(result.Error)
 		}
 
+		//Update data barang di db
+		models.UpdateStokBarangDetilOrder(db, bdo)
+
+		//ambil id cart berdasarkan user id
+		cart := models.TampilkanCart(db, username)
+		models.ClearCart(db, cart[0].ID) //clear cart yang sudah di checkout
+
+		//setelah selesai update stok barang dan clear cart, pindah ke halaman shop
 		http.Redirect(w, r, "/shop", http.StatusSeeOther)
-		/*
-			models.UpdateCartItems(db, idCart, updateItemCart)
-			//setelah selesai update cart, pindah ke halaman checkout
-			http.Redirect(w, r, "/checkout", http.StatusMovedPermanently)
-		*/
+
 	}
 }
