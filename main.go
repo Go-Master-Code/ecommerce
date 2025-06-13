@@ -16,8 +16,10 @@ func main() {
 	//mux.HandleFunc("/home", handler.HomeHandler)
 	mux.HandleFunc("/shop", handler.ShopHandler)
 	mux.HandleFunc("/cart", handler.CartViewHandler)
-	mux.HandleFunc("/delete", middleware.NoCache(handler.DeleteCartItems))        //handler untuk delete barang
-	mux.HandleFunc("/add", middleware.NoCache(handler.AddCartItems))              //handler untuk add barang
+	mux.HandleFunc("/delete", middleware.NoCache(handler.DeleteCartItems)) //handler untuk delete barang
+	//mux.HandleFunc("/add", middleware.NoCache(handler.AddCartItems))               ////OLD METHHOD -> Add Item to cart masih reload halaman
+	mux.HandleFunc("/add", middleware.NoCache(handler.AddBarangToCart))           //handler untuk add barang ke cart
+	mux.HandleFunc("/hapus", middleware.NoCache(handler.DeleteBarangFromCart))    //handler untuk hapus barang dari cart
 	mux.HandleFunc("/update", handler.UpdateCartItems)                            //handler untuk update items pada cart
 	mux.HandleFunc("/checkout", handler.CheckoutHandler)                          //handler untuk checkout (data cart final)
 	mux.HandleFunc("/get_order_items", middleware.NoCache(handler.GetOrderItems)) //handler untuk save data master order
