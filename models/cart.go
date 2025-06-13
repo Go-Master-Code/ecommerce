@@ -33,10 +33,22 @@ func TampilkanCart(db *gorm.DB, idUser string) []Cart { //return value slice [] 
 	return cart
 }
 
+// delete item from cart setelah checkout dilakukan
+func ClearCart(db *gorm.DB, idCart string) []CartItems { //return value slice [] of Barang
+	var ci []CartItems
+
+	err := db.Table("cart_items").Where("id_cart=?", idCart).Delete(&ci).Error
+	if err != nil {
+		panic(err)
+	}
+	return ci
+}
+
 // deklarasi struct dan query
 type CartItems struct { //struct detilTrans ini harus didefinisikan setiap field datanya berdasarkan query di bawah, semua field yang dihasilkan harus punya representasi field pada struct, ditambah dengan tag gorm
 	IdCart     int     `gorm:"column:id_cart"`
 	IdBarang   int     `gorm:"column:id_barang"`
+	Stok       float64 `gorm:"column:stok"`
 	IconPath   string  `gorm:"column:icon_path"`
 	NamaBarang string  `gorm:"column:nama_barang"`
 	Jumlah     float64 `gorm:"column:jumlah"`
@@ -47,6 +59,7 @@ type CartItems struct { //struct detilTrans ini harus didefinisikan setiap field
 type CartItemsView struct { //struct detilTrans ini harus didefinisikan setiap field datanya berdasarkan query di bawah, semua field yang dihasilkan harus punya representasi field pada struct, ditambah dengan tag gorm
 	IdCart     int     `gorm:"column:id_cart"`
 	IdBarang   int     `gorm:"column:id_barang"`
+	Stok       float64 `gorm:"column:stok"`
 	IconPath   string  `gorm:"column:icon_path"`
 	NamaBarang string  `gorm:"column:nama_barang"`
 	Jumlah     float64 `gorm:"column:jumlah"`
@@ -70,7 +83,7 @@ type AddItemCart struct {
 
 func TampilkanCartItems(db *gorm.DB, idUser string) []CartItemsView {
 	var ci []CartItems
-	err := db.Table("cart_items").Select("cart_items.id_cart, id_barang, icon_path, nama_barang, jumlah, harga, (jumlah*harga) as total").Joins("join barang on cart_items.id_barang=barang.id join cart on cart.id_cart=cart_items.id_cart join user on user.id=cart.user_id").Where("user.id=?", idUser).Find(&ci).Error
+	err := db.Table("cart_items").Select("cart_items.id_cart, id_barang, stok, icon_path, nama_barang, jumlah, harga, (jumlah*harga) as total").Joins("join barang on cart_items.id_barang=barang.id join cart on cart.id_cart=cart_items.id_cart join user on user.id=cart.user_id").Where("user.id=?", idUser).Find(&ci).Error
 	if err != nil {
 		panic(err)
 	}
@@ -82,6 +95,7 @@ func TampilkanCartItems(db *gorm.DB, idUser string) []CartItemsView {
 		civ = append(civ, CartItemsView{
 			IdCart:     item.IdCart,
 			IdBarang:   item.IdBarang,
+			Stok:       item.Stok,
 			NamaBarang: item.NamaBarang,
 			Harga:      item.Harga,
 			Jumlah:     item.Jumlah,
@@ -113,7 +127,7 @@ func AddItemToCart(db *gorm.DB, idCart int, idBarang int, jumlah float64) {
 		Jumlah:   jumlah,
 	}
 	//db.Last()
-	log.Println("Masuk ke add cart item models")
+	//log.Println("Masuk ke add cart item models")
 	err := db.Table("cart_items").Create(&addItemCart).Error
 	if err != nil {
 		panic(err)
